@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      args:
+        user: csatlos
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: cinema-api
+    container_name: laravel-cinema-api
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - cinema
+  db:
+    image: mysql:8.0
+    container_name: laravel-docker
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel-cinema-api
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: 'LwVW7Vh)5n[evIqZ'
+      MYSQL_USER: laravel-cinema-api
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    ports:
+      - 8889:3306
+    networks:
+      - cinema
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-cinema-api
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - cinema
+networks:
+  cinema:
+    driver: bridge
