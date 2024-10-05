@@ -6,7 +6,7 @@ use App\DataTransferObjects\MovieScreeningStoreDTO;
 use App\Http\Requests\MovieScreeningStoreRequest;
 use App\Actions\{MovieScreeningStoreAction, MovieScreeningUpdateAction};
 use Illuminate\Http\{JsonResponse};
-use App\Models\{MovieScreening, Room};
+use App\Models\{MovieScreening, Room, Movie};
 use OpenApi\Attributes as OA;
 
 
@@ -64,6 +64,11 @@ class MovieScreeningController extends Controller
     public function store(MovieScreeningStoreRequest $request, MovieScreeningStoreAction $action): JsonResponse
     {
         $room = Room::find($request->room_id);
+        $movie = Movie::find($request->movie_id);
+        if ($room == null || $movie == null) {
+            return response()->json(['errors' => 'Wrong connection id (room or movie)'], 422);
+        }
+        
         if ($request->free_positions < 0 || ($request->free_positions > $room->capacity)) {
             return response()->json(['errors' => 'Wrong free position number'], 422);
         }
